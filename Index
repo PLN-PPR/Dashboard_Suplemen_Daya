@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <title>Monitoring Layanan Suplemen Daya</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7fb;
+      color: #25364a;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0076a8, #00a2c7);
+      color: white;
+      padding: 20px 28px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.12);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .header p {
+      margin: 5px 0 0;
+      opacity: .9;
+      font-size: 13px;
+    }
+
+    .container {
+      padding: 22px;
+      max-width: 1800px;
+      margin: auto;
+    }
+
+    /* KPI */
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .kpi {
+      background: white;
+      padding: 17px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      border-left: 5px solid #008bb5;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: #718096;
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-size: 27px;
+      font-weight: bold;
+      color: #1d425d;
+    }
+
+    /* FILTER */
+
+    .panel {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      margin-bottom: 16px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1.3fr repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid #d6dee7;
+      padding: 10px 11px;
+      border-radius: 7px;
+      background: white;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #008bb5;
+    }
+
+    /* ACTIONS */
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      border-radius: 7px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #008bb5;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #edf2f7;
+      color: #2d4c63;
+    }
+
+    .btn-green {
+      background: #1a936f;
+      color: white;
+    }
+
+    .btn-purple {
+      background: #7251b5;
+      color: white;
+    }
+
+    .btn-outline {
+      background: white;
+      color: #008bb5;
+      border: 1px solid #008bb5;
+    }
+
+    button:hover {
+      opacity: .9;
+    }
+
+    /* TABLE */
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 610px;
+      border-radius: 10px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 1450px;
+      font-size: 12px;
+    }
+
+    th {
+      background: #eef5f8;
+      color: #31556b;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      padding: 11px 8px;
+      border-bottom: 1px solid #dbe5eb;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 9px 8px;
+      border-bottom: 1px solid #edf1f4;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background: #f8fbfd;
+    }
+
+    .status {
+      padding: 5px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .status-belum {
+      background: #fff2cc;
+      color: #8a6200;
+    }
+
+    .status-siap {
+      background: #d9edf7;
+      color: #126582;
+    }
+
+    .status-selesai {
+      background: #d9ead3;
+      color: #39752d;
+    }
+
+    .batal {
+      color: #c53030;
+      font-weight: bold;
+    }
+
+    .td-permanen {
+      color: #6b46c1;
+      font-weight: bold;
+    }
+
+    .count-info {
+      margin-left: auto;
+      font-size: 12px;
+      color: #718096;
+    }
+
+    /* MODAL */
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 30, 45, .55);
+      padding: 25px;
+    }
+
+    .modal-content {
+      background: white;
+      max-width: 1200px;
+      height: calc(100vh - 50px);
+      margin: auto;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .close {
+      margin-left: auto;
+      font-size: 25px;
+      cursor: pointer;
+      color: #718096;
+    }
+
+    .preview {
+      padding: 30px 38px;
+      overflow: auto;
+      flex: 1;
+      font-family: Arial, sans-serif;
+      color: #222;
+      line-height: 1.55;
+    }
+
+    .preview table {
+      min-width: 0;
+      font-size: 11px;
+      margin-top: 14px;
+    }
+
+    .preview th,
+    .preview td {
+      border: 1px solid #555;
+      padding: 7px;
+      position: static;
+    }
+
+    .preview th {
+      background: #eaf3f8;
+      text-align: center;
+    }
+
+    .subject {
+      font-weight: bold;
+      margin-bottom: 25px;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #e2e8f0;
+      padding: 13px 20px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    #docLink {
+      margin-right: auto;
+      font-size: 13px;
+    }
+
+    /* LOADING */
+
+    .loading {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      inset: 0;
+      background: rgba(255,255,255,.72);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loader-box {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.15);
+      font-weight: bold;
+      color: #31556b;
+    }
+
+    @media (max-width: 900px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2,1fr);
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>Monitoring Layanan Suplemen Daya</h1>
+  <p>Monitoring pengajuan, konsep persetujuan LSD dan Tambah Daya Permanen</p>
+</div>
+
+<div class="container">
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+
+    <div class="kpi">
+      <div class="kpi-label">TOTAL PENGAJUAN</div>
+      <div class="kpi-value" id="kpiTotal">0</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">BELUM DIPROSES</div>
+      <div class="kpi-value" id="kpiBelum">0</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">SIAP KONSEP SURAT</div>
+      <div class="kpi-value" id="kpiSiap">0</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">SELESAI</div>
+      <div class="kpi-value" id="kpiSelesai">0</div>
+    </div>
+
+    <div class="kpi">
+      <div class="kpi-label">TD PERMANEN</div>
+      <div class="kpi-value" id="kpiTD">0</div>
+    </div>
+
+  </div>
+
+
+  <!-- FILTER -->
+  <div class="panel">
+
+    <div class="filters">
+
+      <input
+        id="search"
+        type="text"
+        placeholder="Cari IDPEL / nama pelanggan / nomor surat..."
+        oninput="applyFilter()">
+
+      <select id="filterUID" onchange="applyFilter()">
+        <option value="">Semua UID</option>
+      </select>
+
+      <select id="filterJenis" onchange="applyFilter()">
+        <option value="">Semua Jenis Permohonan</option>
+      </select>
+
+      <select id="filterPermanen" onchange="applyFilter()">
+        <option value="">Semua Keterangan</option>
+      </select>
+
+      <select id="filterStatus" onchange="applyFilter()">
+        <option value="">Semua Status</option>
+      </select>
+
+    </div>
+  </div>
+
+
+  <!-- ACTION -->
+  <div class="panel">
+
+    <div class="actions">
+
+      <button class="btn-primary"
+              onclick="generateApproval()">
+        Generate Persetujuan LSD
+      </button>
+
+      <button class="btn-purple"
+              onclick="generatePermanent()">
+        Generate Nota Dinas TD Permanen
+      </button>
+
+      <button class="btn-secondary"
+              onclick="setStatus('Belum Diproses')">
+        Belum Diproses
+      </button>
+
+      <button class="btn-secondary"
+              onclick="setStatus('Siap Konsep Surat')">
+        Siap Konsep Surat
+      </button>
+
+      <button class="btn-green"
+              onclick="setStatus('Selesai')">
+        Selesai
+      </button>
+
+      <button class="btn-outline"
+              onclick="refreshData()">
+        Refresh
+      </button>
+
+      <span class="count-info" id="countInfo">
+        0 data
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- DATA TABLE -->
+  <div class="panel">
+
+    <div class="table-wrap">
+
+      <table>
+        <thead>
+          <tr>
+            <th>
+              <input type="checkbox"
+                     id="checkAll"
+                     onchange="toggleAll(this)">
+            </th>
+
+            <th>ID Pengajuan</th>
+            <th>UID</th>
+            <th>IDPEL</th>
+            <th>Nama Pelanggan</th>
+            <th>Jenis</th>
+            <th>Keterangan</th>
+            <th>Status</th>
+            <th>Nomor Surat Unit</th>
+            <th>Tanggal</th>
+            <th>Tarif/Daya Existing</th>
+            <th>Tarif/Daya LSD</th>
+            <th>Lama</th>
+          </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- PREVIEW MODAL -->
+<div class="modal" id="previewModal">
+
+  <div class="modal-content">
+
+    <div class="modal-header">
+      <h2>Preview Konsep</h2>
+
+      <span class="close"
+            onclick="closeModal()">&times;</span>
+    </div>
+
+    <div class="preview" id="previewArea"></div>
+
+    <div class="modal-footer">
+
+      <span id="docLink"></span>
+
+      <button class="btn-secondary"
+              onclick="closeModal()">
+        Tutup
+      </button>
+
+      <button class="btn-primary"
+              onclick="copyAndExport()">
+        Copy Konsep & Export Google Docs
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<div class="loading" id="loading">
+  <div class="loader-box">
+    Memproses data...
+  </div>
+</div>
+
+
+<script>
+
+let ALL_DATA = [];
+let FILTERED_DATA = [];
+
+let CURRENT_PREVIEW = null;
+let CURRENT_TYPE = null;
+let CURRENT_ROWS = [];
+
+
+/* ======================================================
+   INIT
+====================================================== */
+
+window.onload = function() {
+  refreshData();
+};
+
+
+function showLoading(show) {
+  document.getElementById('loading').style.display =
+    show ? 'flex' : 'none';
+}
+
+
+/* ======================================================
+   LOAD DATA
+====================================================== */
+
+function refreshData() {
+
+  showLoading(true);
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+
+      showLoading(false);
+
+      ALL_DATA = result.rows || [];
+
+      updateKPI(result.kpi);
+      populateFilters(result.filters);
+
+      applyFilter();
+
+    })
+    .withFailureHandler(showError)
+    .getDashboardData();
+}
+
+
+function updateKPI(kpi) {
+
+  document.getElementById('kpiTotal').textContent =
+    kpi.total || 0;
+
+  document.getElementById('kpiBelum').textContent =
+    kpi.belum || 0;
+
+  document.getElementById('kpiSiap').textContent =
+    kpi.siap || 0;
+
+  document.getElementById('kpiSelesai').textContent =
+    kpi.selesai || 0;
+
+  document.getElementById('kpiTD').textContent =
+    kpi.tdPermanen || 0;
+}
+
+
+/* ======================================================
+   FILTER
+====================================================== */
+
+function populateFilters(filters) {
+
+  fillSelect(
+    'filterUID',
+    filters.uid || [],
+    'Semua UID'
+  );
+
+  fillSelect(
+    'filterJenis',
+    filters.jenis || [],
+    'Semua Jenis Permohonan'
+  );
+
+  fillSelect(
+    'filterPermanen',
+    filters.permanen || [],
+    'Semua Keterangan'
+  );
+
+  fillSelect(
+    'filterStatus',
+    filters.status || [],
+    'Semua Status'
+  );
+}
+
+
+function fillSelect(id, items, label) {
+
+  const el = document.getElementById(id);
+
+  const current = el.value;
+
+  el.innerHTML =
+    '<option value="">' + label + '</option>';
+
+  items.forEach(item => {
+
+    const op = document.createElement('option');
+
+    op.value = item;
+    op.textContent = item;
+
+    el.appendChild(op);
+
+  });
+
+  if ([...el.options].some(o => o.value === current)) {
+    el.value = current;
+  }
+}
+
+
+function applyFilter() {
+
+  const search =
+    document.getElementById('search')
+      .value.toLowerCase().trim();
+
+  const uid =
+    document.getElementById('filterUID').value;
+
+  const jenis =
+    document.getElementById('filterJenis').value;
+
+  const permanen =
+    document.getElementById('filterPermanen').value;
+
+  const status =
+    document.getElementById('filterStatus').value;
+
+  FILTERED_DATA = ALL_DATA.filter(r => {
+
+    const haystack = [
+      r.idPengajuan,
+      r.idpel,
+      r.nama,
+      r.nomorSurat,
+      r.perihalSurat
+    ]
+    .join(' ')
+    .toLowerCase();
+
+    return (
+      (!search || haystack.includes(search)) &&
+      (!uid || r.uid === uid) &&
+      (!jenis || r.jenisPermohonan === jenis) &&
+      (!permanen || r.keteranganPermanen === permanen) &&
+      (!status || r.status === status)
+    );
+
+  });
+
+  renderTable();
+}
+
+
+/* ======================================================
+   TABLE
+====================================================== */
+
+function renderTable() {
+
+  const body =
+    document.getElementById('tableBody');
+
+  body.innerHTML = '';
+
+  FILTERED_DATA.forEach(r => {
+
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>
+        <input type="checkbox"
+               class="rowCheck"
+               value="${r.rowNumber}">
+      </td>
+
+      <td>${esc(r.idPengajuan)}</td>
+      <td>${esc(r.uid)}</td>
+      <td>${esc(r.idpel)}</td>
+      <td><b>${esc(r.nama)}</b></td>
+
+      <td class="${r.jenisPermohonan === 'Batal'
+        ? 'batal' : ''}">
+        ${esc(r.jenisPermohonan)}
+      </td>
+
+      <td class="${r.keteranganPermanen === 'TD Permanen'
+        ? 'td-permanen' : ''}">
+        ${esc(r.keteranganPermanen)}
+      </td>
+
+      <td>
+        <span class="status ${statusClass(r.status)}">
+          ${esc(r.status)}
+        </span>
+      </td>
+
+      <td>${esc(r.nomorSurat)}</td>
+      <td>${esc(r.tanggalSurat)}</td>
+
+      <td>
+        ${esc(r.tarifAwal)} /
+        ${formatKVAClient(r.dayaAwal)}
+      </td>
+
+      <td>
+        ${esc(r.tarifAkhir)} /
+        ${formatKVAClient(r.dayaAkhir)}
+      </td>
+
+      <td>${esc(r.lama)}</td>
+    `;
+
+    body.appendChild(tr);
+  });
+
+  document.getElementById('countInfo').textContent =
+    FILTERED_DATA.length + ' data';
+
+  document.getElementById('checkAll').checked = false;
+}
+
+
+function statusClass(status) {
+
+  if (status === 'Selesai')
+    return 'status-selesai';
+
+  if (status === 'Siap Konsep Surat')
+    return 'status-siap';
+
+  return 'status-belum';
+}
+
+
+function toggleAll(source) {
+
+  document
+    .querySelectorAll('.rowCheck')
+    .forEach(cb => {
+      cb.checked = source.checked;
+    });
+}
+
+
+function getSelectedRows() {
+
+  return [...document.querySelectorAll(
+    '.rowCheck:checked'
+  )].map(cb => Number(cb.value));
+}
+
+
+/* ======================================================
+   STATUS
+====================================================== */
+
+function setStatus(status) {
+
+  const rows = getSelectedRows();
+
+  if (!rows.length) {
+    alert('Pilih minimal satu pelanggan.');
+    return;
+  }
+
+  showLoading(true);
+
+  google.script.run
+    .withSuccessHandler(function() {
+
+      showLoading(false);
+      refreshData();
+
+    })
+    .withFailureHandler(showError)
+    .updateStatus(rows, status);
+}
+
+
+/* ======================================================
+   GENERATE APPROVAL
+====================================================== */
+
+function generateApproval() {
+
+  const rows = getSelectedRows();
+
+  if (!rows.length) {
+    alert('Pilih minimal satu pelanggan.');
+    return;
+  }
+
+  showLoading(true);
+
+  google.script.run
+    .withSuccessHandler(function(data) {
+
+      showLoading(false);
+
+      CURRENT_PREVIEW = data;
+      CURRENT_TYPE = 'APPROVAL';
+      CURRENT_ROWS = rows;
+
+      renderApprovalPreview(data);
+      openModal();
+
+    })
+    .withFailureHandler(showError)
+    .generateApprovalPreview(rows);
+}
+
+
+/* ======================================================
+   GENERATE TD PERMANEN
+====================================================== */
+
+function generatePermanent() {
+
+  const rows = getSelectedRows();
+
+  if (!rows.length) {
+    alert('Pilih minimal satu pelanggan.');
+    return;
+  }
+
+  showLoading(true);
+
+  google.script.run
+    .withSuccessHandler(function(data) {
+
+      showLoading(false);
+
+      CURRENT_PREVIEW = data;
+      CURRENT_TYPE = 'PERMANENT';
+      CURRENT_ROWS = rows;
+
+      renderPermanentPreview(data);
+      openModal();
+
+    })
+    .withFailureHandler(showError)
+    .generatePermanentPreview(rows);
+}
+
+
+/* ======================================================
+   PREVIEW APPROVAL
+====================================================== */
+
+function renderApprovalPreview(data) {
+
+  let html = `
+    <div class="subject">
+      Perihal : ${esc(data.subject)}
+    </div>
+  `;
+
+  html += referenceHTML(data);
+
+  html += `
+    <p>
+      Permohonan Layanan Suplemen Daya (LSD)
+      konsumen berikut dapat Disetujui.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>IDPEL</th>
+          <th>Nama</th>
+          <th>Tarif/Daya Existing</th>
+          <th>Tarif/Daya LSD</th>
+          <th>Lama Waktu</th>
+          <th>Energi Baseline</th>
+          <th>Energi Komitmen</th>
+          <th>Energi LSD</th>
+          <th>Ket</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.rows.forEach(r => {
+
+    html += `
+      <tr>
+        <td>${esc(r.idpel)}</td>
+        <td>${esc(r.nama)}</td>
+        <td>${esc(r.existing)}</td>
+        <td>${esc(r.lsd)}</td>
+        <td>${esc(r.lama)}</td>
+        <td>${esc(r.baseline)}</td>
+        <td>${esc(r.komitmen)}</td>
+        <td>${esc(r.energiLSD)}</td>
+        <td>${esc(r.ket)}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </tbody>
+    </table>
+
+    <p>
+      Persetujuan ini diberikan dengan ketentuan bahwa
+      pelaksanaan layanan harus mematuhi kaidah-kaidah
+      yang tercantum dalam Petunjuk Teknis nomor
+      0038.Pts/DIR/2025 tentang Pelaksanaan Produk
+      Layanan Suplemen Daya.
+    </p>
+
+    <p>
+      PLN ${esc(data.uid)} segera memproses administrasi
+      dan teknis permohonan LSD konsumen, serta melakukan
+      probing kembali paling lambat 2 (dua) bulan setelah
+      layanan LSD diaktifkan untuk kebutuhan perpanjangan
+      LSD atau perubahan daya permanen.
+    </p>
+  `;
+
+  document.getElementById('previewArea').innerHTML = html;
+}
+
+
+/* ======================================================
+   PREVIEW TD PERMANEN
+====================================================== */
+
+function renderPermanentPreview(data) {
+
+  let html = `
+    <div class="subject">
+      Perihal : ${esc(data.subject)}
+    </div>
+  `;
+
+  html += referenceHTML(data);
+
+  html += `
+    <p>
+      Dengan ini kami sampaikan data pelanggan sebagai berikut:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Pelanggan</th>
+          <th>ID Pel</th>
+          <th>Tarif/Daya Kontrak</th>
+          <th>Tarif/Daya LSD</th>
+          <th>BP Setelah Diskon + Materai</th>
+          <th>Penyesuaian UJL</th>
+        </tr>
+      </thead>
+
+      <tbody>
+  `;
+
+  data.rows.forEach(r => {
+
+    html += `
+      <tr>
+        <td>${esc(r.nama)}</td>
+        <td>${esc(r.idpel)}</td>
+        <td>${esc(r.kontrak)}</td>
+        <td>${esc(r.lsd)}</td>
+        <td>${esc(r.bp)}</td>
+        <td>${esc(r.ujl)}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </tbody>
+    </table>
+
+    <p>
+      Mohon EVP CES dapat melakukan proses penerbitan
+      Diskon Tambah Daya Permanen sebesar 25% dari
+      BP Normal pelanggan tersebut di atas pada
+      kesempatan pertama.
+    </p>
+
+    <p>
+      Demikian disampaikan, atas perhatian dan
+      kerjasamanya diucapkan terima kasih.
+    </p>
+  `;
+
+  document.getElementById('previewArea').innerHTML = html;
+}
+
+
+/* ======================================================
+   REFERENCE
+====================================================== */
+
+function referenceHTML(data) {
+
+  if (!data.references ||
+      !data.references.length) {
+    return '';
+  }
+
+  if (data.references.length === 1) {
+
+    const r = data.references[0];
+
+    return `
+      <p>
+        Menindaklanjuti Surat dari PLN
+        ${esc(data.uid)}
+        nomor <b>${esc(r.nomor)}</b>
+        tanggal ${esc(r.tanggal)}
+        perihal ${esc(r.perihal)},
+        dengan ini kami sampaikan sebagai berikut:
+      </p>
+    `;
+  }
+
+  let html = '<p>Menindaklanjuti:</p><ol>';
+
+  data.references.forEach(r => {
+
+    html += `
+      <li>
+        Surat dari PLN ${esc(data.uid)}
+        nomor <b>${esc(r.nomor)}</b>
+        tanggal ${esc(r.tanggal)}
+        perihal ${esc(r.perihal)}.
+      </li>
+    `;
+  });
+
+  html += `
+    </ol>
+
+    <p>
+      Serta sebagaimana dokumen pendukung yang
+      disampaikan PLN ${esc(data.uid)},
+      dengan ini kami sampaikan sebagai berikut:
+    </p>
+  `;
+
+  return html;
+}
+
+
+/* ======================================================
+   COPY + EXPORT DOCS
+====================================================== */
+
+function copyAndExport() {
+
+  if (!CURRENT_PREVIEW ||
+      !CURRENT_ROWS.length) {
+    return;
+  }
+
+  // Copy HTML/rich text ke clipboard
+  copyPreviewToClipboard();
+
+  showLoading(true);
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+
+      showLoading(false);
+
+      document.getElementById('docLink').innerHTML =
+        `<a href="${result.url}"
+            target="_blank"
+            style="color:#008bb5;font-weight:bold;">
+           Buka Google Docs
+         </a>`;
+
+    })
+    .withFailureHandler(showError)
+    .exportConceptToDocs(
+      CURRENT_TYPE,
+      CURRENT_ROWS
+    );
+}
+
+
+function copyPreviewToClipboard() {
+
+  const area =
+    document.getElementById('previewArea');
+
+  const html = area.innerHTML;
+  const text = area.innerText;
+
+  if (navigator.clipboard &&
+      window.ClipboardItem) {
+
+    const item = new ClipboardItem({
+
+      'text/html':
+        new Blob(
+          [html],
+          {type:'text/html'}
+        ),
+
+      'text/plain':
+        new Blob(
+          [text],
+          {type:'text/plain'}
+        )
+
+    });
+
+    navigator.clipboard
+      .write([item])
+      .catch(() => fallbackCopy(text));
+
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+
+function fallbackCopy(text) {
+
+  const ta = document.createElement('textarea');
+
+  ta.value = text;
+
+  document.body.appendChild(ta);
+
+  ta.select();
+
+  document.execCommand('copy');
+
+  ta.remove();
+}
+
+
+/* ======================================================
+   MODAL
+====================================================== */
+
+function openModal() {
+
+  document.getElementById(
+    'previewModal'
+  ).style.display = 'block';
+
+  document.getElementById(
+    'docLink'
+  ).innerHTML = '';
+}
+
+
+function closeModal() {
+
+  document.getElementById(
+    'previewModal'
+  ).style.display = 'none';
+}
+
+
+/* ======================================================
+   UTILITY
+====================================================== */
+
+function formatKVAClient(value) {
+
+  if (value === '' ||
+      value === null ||
+      value === undefined) {
+    return '';
+  }
+
+  let n;
+
+  if (typeof value === 'number') {
+    n = value;
+  } else {
+    n = Number(
+      String(value).replace(/[^\d]/g,'')
+    );
+  }
+
+  if (isNaN(n)) return esc(value);
+
+  return (n / 1000)
+    .toLocaleString('id-ID') +
+    ' kVA';
+}
+
+
+function esc(value) {
+
+  return String(
+    value === null ||
+    value === undefined
+      ? ''
+      : value
+  )
+  .replace(/&/g,'&amp;')
+  .replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;')
+  .replace(/'/g,'&#039;');
+}
+
+
+function showError(error) {
+
+  showLoading(false);
+
+  alert(
+    error && error.message
+      ? error.message
+      : String(error)
+  );
+}
+
+</script>
+
+</body>
+</html>
